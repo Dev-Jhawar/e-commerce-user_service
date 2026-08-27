@@ -17,8 +17,10 @@ WORKDIR /app
 # Copy the built jar from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# REST API port and gRPC port
-EXPOSE 8081 9090
+# REST API port only — gRPC (9090) is intentionally not exposed here since
+# Render's free web service only routes a single public port. Running this
+# same image on a platform with TCP/gRPC support later, add: EXPOSE 9090
+EXPOSE 8081
 
 # Keep heap modest for free-tier hosts (adjust if you have more RAM available)
 ENTRYPOINT ["java", "-Xmx400m", "-jar", "app.jar"]
