@@ -9,6 +9,7 @@ import com.example.demo.model.User;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,36 +17,61 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepo repo;
 
     @Override
     public List<UserResponseDTO> getAllUsers() {
-        return repo.findAll()
+        log.info("Fetching all users");
+
+        List<UserResponseDTO> users = repo.findAll()
                 .stream()
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
+
+        log.info("Successfully fetched {} users", users.size());
+
+        return users;
     }
 
     @Override
     public UserResponseDTO getUserById(Long id) {
+        log.info("Fetching user with id: {}", id);
+
         User user = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not Found."));
+                .orElseThrow(() -> {
+                    log.warn("User not found with id: {}", id);
+                    return new ResourceNotFoundException("User not Found.");
+                });
+
+        log.info("User found with id: {}", id);
 
         return UserMapper.toDTO(user);
     }
 
     @Override
     public UserResponseDTO createUser(CreateUserRequestDTO createUser) {
+        log.info("Creating a new user");
+
         User user = UserMapper.toEntity(createUser);
-        return UserMapper.toDTO(repo.save(user));
+        User savedUser = repo.save(user);
+
+        log.info("User created successfully with id: {}", savedUser.getId());
+
+        return UserMapper.toDTO(savedUser);
     }
 
     @Override
     public UserResponseDTO updateUser(Long id, UpdateUserRequestDTO updateDetails) {
+        log.info("Updating user with id: {}", id);
+
         User user = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid ID is Provided."));
+                .orElseThrow(() -> {
+                    log.warn("Cannot update. User not found with id: {}", id);
+                    return new ResourceNotFoundException("Invalid ID is Provided.");
+                });
 
         user.setFirstName(updateDetails.getFirstName());
         user.setLastName(updateDetails.getLastName());
@@ -57,16 +83,23 @@ public class UserServiceImpl implements UserService {
 
         User updatedUser = repo.save(user);
 
+        log.info("User updated successfully with id: {}", id);
+
         return UserMapper.toDTO(updatedUser);
     }
 
     @Override
     public void deleteUser(Long id) {
-        User user = repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid ID is Provided."));
+        log.info("Deleting user with id: {}", id);
 
-        if(user != null) {
-            repo.deleteById(id);
-        }
+        repo.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Cannot delete. User not found with id: {}", id);
+                    return new ResourceNotFoundException("Invalid ID is Provided.");
+                });
+
+        repo.deleteById(id);
+
+        log.info("User deleted successfully with id: {}", id);
     }
 }

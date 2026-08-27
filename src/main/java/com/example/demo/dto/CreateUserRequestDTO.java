@@ -15,6 +15,9 @@ public class CreateUserRequestDTO {
 
     private String lastName;
 
+    @NotBlank(message = "Password is Required.")
+    private String password;
+
     @Email(message = "Invalid E-Mail format")
     @NotBlank(message = "E-Mail is Required.")
     private String email;
