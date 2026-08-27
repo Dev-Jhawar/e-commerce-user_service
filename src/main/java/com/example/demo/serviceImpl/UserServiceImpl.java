@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -73,13 +74,14 @@ public class UserServiceImpl implements UserService {
                     return new ResourceNotFoundException("Invalid ID is Provided.");
                 });
 
-        user.setFirstName(updateDetails.getFirstName());
-        user.setLastName(updateDetails.getLastName());
-        user.setEmail(updateDetails.getEmail());
-        user.setGender(updateDetails.getGender());
-        user.setRole(updateDetails.getRole());
-        user.setNumber(updateDetails.getNumber());
-        user.setAddress(updateDetails.getAddress());
+        user.setFirstName(Optional.ofNullable(updateDetails.getFirstName()).orElse(user.getFirstName()));
+        user.setLastName(Optional.ofNullable(updateDetails.getLastName()).orElse(user.getLastName()));
+        user.setEmail(Optional.ofNullable(updateDetails.getEmail()).orElse(user.getEmail()));
+        user.setGender(Optional.ofNullable(updateDetails.getGender()).orElse(user.getGender()));
+        user.setRole(Optional.ofNullable(updateDetails.getRole()).orElse(user.getRole()));
+        user.setNumber(Optional.ofNullable(updateDetails.getNumber()).orElse(user.getNumber()));
+        user.setAddress(Optional.ofNullable(updateDetails.getAddress()).orElse(user.getAddress()));
+
 
         User updatedUser = repo.save(user);
 
